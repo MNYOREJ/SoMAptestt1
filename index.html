@@ -1,86 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SoMAptestt1 - Firebase App</title>
-    <link rel="stylesheet" href="style.css" />
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
-        input, button {
-            padding: 10px;
-            margin: 5px;
-        }
-        #messages {
-            margin-top: 20px;
-            text-align: left;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-            border: 1px solid #ccc;
-            padding: 10px;
-        }
-        .message {
-            border-bottom: 1px solid #ddd;
-            padding: 5px 0;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SoMAp Chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+    }
+    header {
+      background: #007bff;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      font-size: 1.4em;
+      font-weight: bold;
+    }
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+    }
+    .message {
+      background: white;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .message strong {
+      color: #007bff;
+    }
+    footer {
+      display: flex;
+      padding: 10px;
+      background: #eee;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+    }
+    input {
+      flex: 1;
+      margin-right: 10px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
 </head>
 <body>
-    <h1>SoMAptestt1 - Firebase Live App</h1>
-    
-    <div>
-        <input type="text" id="nameInput" placeholder="Your name" />
-        <input type="text" id="messageInput" placeholder="Your message" />
-        <button id="sendBtn">Send</button>
-    </div>
-    
-    <div id="messages"></div>
+  <header>SoMAp Live Chat</header>
 
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js"></script>
-    
-    <!-- Your Firebase config file -->
-    <script src="firebase.js"></script>
+  <div id="messages"></div>
 
-    <script>
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database(app);
+  <footer>
+    <input type="text" id="nameInput" placeholder="Your name" />
+    <input type="text" id="messageInput" placeholder="Your message" />
+    <button id="sendBtn">Send</button>
+  </footer>
 
-        const nameInput = document.getElementById("nameInput");
-        const messageInput = document.getElementById("messageInput");
-        const sendBtn = document.getElementById("sendBtn");
-        const messagesDiv = document.getElementById("messages");
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
-        // Send message
-        sendBtn.addEventListener("click", () => {
-            const name = nameInput.value.trim();
-            const message = messageInput.value.trim();
-            if (name && message) {
-                const msgRef = database.ref("messages").push();
-                msgRef.set({
-                    name: name,
-                    text: message,
-                    timestamp: Date.now()
-                });
-                messageInput.value = "";
-            }
+  <!-- Firebase config -->
+  <script src="firebase.js"></script>
+
+  <script>
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    const nameInput = document.getElementById("nameInput");
+    const messageInput = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const messagesDiv = document.getElementById("messages");
+
+    // Send message
+    sendBtn.addEventListener("click", () => {
+      const name = nameInput.value.trim();
+      const message = messageInput.value.trim();
+      if (name && message) {
+        database.ref("messages").push({
+          name: name,
+          text: message,
+          timestamp: Date.now()
         });
+        messageInput.value = "";
+      }
+    });
 
-        // Listen for new messages
-        database.ref("messages").on("child_added", snapshot => {
-            const msg = snapshot.val();
-            const msgDiv = document.createElement("div");
-            msgDiv.className = "message";
-            msgDiv.textContent = `${msg.name}: ${msg.text}`;
-            messagesDiv.appendChild(msgDiv);
-        });
-    </script>
+    // Listen for new messages
+    database.ref("messages").on("child_added", snapshot => {
+      const msg = snapshot.val();
+      const msgDiv = document.createElement("div");
+      msgDiv.className = "message";
+      msgDiv.innerHTML = `<strong>${msg.name}:</strong> ${msg.text}`;
+      messagesDiv.appendChild(msgDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+  </script>
 </body>
 </html>
